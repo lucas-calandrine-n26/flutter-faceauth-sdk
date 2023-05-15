@@ -1,5 +1,5 @@
-name: faceauth
-description: CAF FaceAuth SDK
+name: caf_face_authenticator
+description: CAF Face Authenticator SDK
 version: 0.0.1
 homepage:
 

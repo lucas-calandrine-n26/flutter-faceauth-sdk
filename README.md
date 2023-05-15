@@ -2,7 +2,7 @@
 
 Para usar o SDK de face authenticator da CAF, primeiro é necessário adicionar a depêndencia ao `pubspec.yaml`
 ```
-faceauth:
+caf_face_authenticator:
     git:
       url: https://github.com/combateafraude/flutter-faceauth-sdk
       rev: 0.0.1
@@ -14,19 +14,19 @@ flutter clean
 flutter pub get
 ```
 
-Com a depêndencia instalada, agora é possível instanciar um classe FaceAuth
+Com a dependência instalada, agora é possível instanciar um classe FaceAuthenticator
 ```
-import 'package:faceauth/faceauth.dart';
+import 'package:caf_face_authenticator/caf_face_authenticator.dart';
 
 bool isLiveness = false;
 bool isMatch = false;
-final faceAuth = FaceAuth(
+final faceAuthenticator = FaceAuthenticator(
     'caf-mobile-token',
     'client-id',
     'client-secret',
     'person-id (cpf)');
 try {
-    final result = await faceAuth.initialize();
+    final result = await faceAuthenticator.initialize();
     isLiveness = result.isAlive;
     isMatch = result.isMatch;
 } catch (e) {
