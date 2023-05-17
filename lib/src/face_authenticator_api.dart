@@ -1,46 +1,40 @@
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:faceauth/faceauth.dart';
+import 'package:caf_face_authenticator/src/face_authenticator_exceptions.dart';
 import 'package:http/http.dart' as http;
 
-class FaceAuthApi {
-  static const String _faceLivenessUrl =
-      'https://api.public.caf.io/v1/sdks/faces/liveness-partner';
-  static const String _faceMatchUrl =
-      'https://api.public.caf.io/v1/sdks/faces/authentication-partner';
+class FaceAuthenticatorApi {
+  static const String _faceLivenessUrl = 'v1/sdks/faces/liveness-partner';
+  static const String _faceMatchUrl = 'v1/sdks/faces/authentication-partner';
   static const _sdkVersion = 'Flutter-1.0.0';
 
+  final String baseUrl;
   final String token;
   final String clientId;
   final String clientSecret;
   final String personId;
 
-  FaceAuthApi(
-    this.token,
-    this.clientId,
-    this.clientSecret,
-    this.personId,
-  );
+  FaceAuthenticatorApi(this.token, this.clientId, this.clientSecret, this.personId,
+      {this.baseUrl = 'https://api.public.caf.io/'});
 
-  Future<bool> verifyLiveness(sessionId) async {
-    var uri = Uri.parse(_faceLivenessUrl);
+  Future<bool> verifyLiveness(String sessionId) async {
+    var uri = Uri.parse('$baseUrl$_faceLivenessUrl');
     var body = _getBody(sessionId);
     var headers = _getHeaders();
     var response = await http.post(uri, body: body, headers: headers);
     if (response.statusCode != HttpStatus.ok) {
-      throw FaceAuthLivenessApiException(response);
+      throw FaceAuthenticatorLivenessApiException(response);
     }
     return true;
   }
 
-  Future<bool> verifyFaceMatch(sessionId) async {
-    var uri = Uri.parse(_faceMatchUrl);
+  Future<bool> verifyFaceMatch(String sessionId) async {
+    var uri = Uri.parse('$baseUrl$_faceMatchUrl');
     var body = _getBody(sessionId);
     var headers = _getHeaders();
     var response = await http.post(uri, body: body, headers: headers);
     if (response.statusCode != HttpStatus.ok) {
-      throw FaceAuthFaceMathApiException(response);
+      throw FaceAuthenticatorFaceMathApiException(response);
     }
     return jsonDecode(response.body)['isMatch'];
   }
@@ -52,7 +46,7 @@ class FaceAuthApi {
     };
   }
 
-  String _getBody(sessionId) {
+  String _getBody(String sessionId) {
     return jsonEncode({
       'personId': personId,
       'sessionId': sessionId,

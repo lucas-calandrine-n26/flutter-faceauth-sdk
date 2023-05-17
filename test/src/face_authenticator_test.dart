@@ -1,8 +1,9 @@
 import 'dart:io';
 
+import 'package:caf_face_authenticator/src/face_authenticator.dart';
+import 'package:caf_face_authenticator/src/face_authenticator_exceptions.dart';
 import 'package:cs_liveness_flutter/cs_liveness_exceptions.dart';
 import 'package:cs_liveness_flutter/cs_liveness_result.dart';
-import 'package:faceauth/faceauth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart';
 import 'package:mocktail/mocktail.dart';
@@ -12,8 +13,8 @@ import '../mock/mock.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late FaceAuth faceAuth;
-  final faceAuthApiMock = FaceAuthApiMock();
+  late FaceAuthenticator faceAuthenticator;
+  final faceAuthApiMock = FaceAuthenticatorApiMock();
   final csLivenessMock = CsLivenessMock();
   final csLivenessResultStub = CsLivenessResult(
     base64Image: 'base64Image',
@@ -30,16 +31,16 @@ void main() {
     when(() => faceAuthApiMock.verifyFaceMatch(any()))
         .thenAnswer((_) async => true);
 
-    faceAuth = FaceAuth('clientId', 'clientSecret', 'token', 'personId');
-    faceAuth.liveness = csLivenessMock;
-    faceAuth.faceAuthApi = faceAuthApiMock;
+    faceAuthenticator = FaceAuthenticator('clientId', 'clientSecret', 'token', 'personId');
+    faceAuthenticator.liveness = csLivenessMock;
+    faceAuthenticator.faceAuthenticatorApi = faceAuthApiMock;
   });
 
-  group('GIVEN a FaceAuth instance ', () {
+  group('GIVEN a FaceAuthenticator instance ', () {
     test(
       'WHEN call to initialize THEN it should return a valid FaceAuthResult',
       () async {
-        var result = await faceAuth.initialize();
+        var result = await faceAuthenticator.initialize();
         expect(result.isAlive, true);
         expect(result.isMatch, true);
         expect(result.trackingId, 'SessionId');
@@ -58,7 +59,7 @@ void main() {
         );
         when(() => csLivenessMock.start())
             .thenAnswer((_) async => invalidCsLivenessResult);
-        var result = await faceAuth.initialize();
+        var result = await faceAuthenticator.initialize();
         expect(result.isAlive, false);
         expect(result.isMatch, false);
         expect(result.trackingId, '');
@@ -72,11 +73,11 @@ void main() {
         when(() => faceAuthApiMock.verifyLiveness(any())).thenAnswer(
           (_) async {
             var response = Response("{}", HttpStatus.notFound);
-            throw FaceAuthLivenessApiException(response);
+            throw FaceAuthenticatorLivenessApiException(response);
           },
         );
-        expect(() async => await faceAuth.initialize(),
-            throwsA(isA<FaceAuthApiException>()));
+        expect(() async => await faceAuthenticator.initialize(),
+            throwsA(isA<FaceAuthenticatorApiException>()));
       },
     );
 
@@ -86,11 +87,11 @@ void main() {
         when(() => faceAuthApiMock.verifyFaceMatch(any())).thenAnswer(
           (_) async {
             var response = Response("{}", HttpStatus.notFound);
-            throw FaceAuthFaceMathApiException(response);
+            throw FaceAuthenticatorFaceMathApiException(response);
           },
         );
-        expect(() async => await faceAuth.initialize(),
-            throwsA(isA<FaceAuthApiException>()));
+        expect(() async => await faceAuthenticator.initialize(),
+            throwsA(isA<FaceAuthenticatorApiException>()));
       },
     );
 
@@ -100,15 +101,15 @@ void main() {
         when(() => csLivenessMock.start()).thenAnswer(
           (_) async => (throw Exception()),
         );
-        expect(() async => await faceAuth.initialize(),
-            throwsA(isA<FaceAuthUnknownException>()));
+        expect(() async => await faceAuthenticator.initialize(),
+            throwsA(isA<FaceAuthenticatorUnknownException>()));
       },
     );
 
     test(
       'WHEN call to startLiveness THEN it should return a valid CsLivenessResult',
       () async {
-        var result = await faceAuth.startLiveness();
+        var result = await faceAuthenticator.startLiveness();
         expect(result.real, true);
         expect(result.image, null);
         expect(result.sessionId, 'SessionId');
@@ -123,7 +124,7 @@ void main() {
         when(() => csLivenessMock.start()).thenAnswer(
           (_) async => throw Exception(),
         );
-        expect(() async => await faceAuth.startLiveness(),
+        expect(() async => await faceAuthenticator.startLiveness(),
             throwsA(isA<Exception>()));
         verify(() => csLivenessMock.start());
       },
@@ -143,8 +144,8 @@ void main() {
         test(exception.toString(), () {
           when(() => csLivenessMock.start())
               .thenAnswer((_) async => throw exception);
-          expect(() async => await faceAuth.startLiveness(),
-              throwsA(isA<FaceAuthLivenessSdkException>()));
+          expect(() async => await faceAuthenticator.startLiveness(),
+              throwsA(isA<FaceAuthenticatorLivenessSdkException>()));
           verify(() => csLivenessMock.start());
         });
       }
@@ -160,7 +161,7 @@ void main() {
           real: true,
         );
         expect(
-          faceAuth.isLivenessResultValid(livenessResultStub),
+          faceAuthenticator.isLivenessResultValid(livenessResultStub),
           true,
         );
       },
@@ -177,7 +178,7 @@ void main() {
           real: real,
         );
         expect(
-          faceAuth.isLivenessResultValid(livenessResultStub),
+          faceAuthenticator.isLivenessResultValid(livenessResultStub),
           false,
         );
       },
@@ -193,7 +194,7 @@ void main() {
           real: null,
         );
         expect(
-          faceAuth.isLivenessResultValid(livenessResultStub),
+          faceAuthenticator.isLivenessResultValid(livenessResultStub),
           false,
         );
       },

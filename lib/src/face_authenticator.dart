@@ -1,47 +1,48 @@
+import 'package:caf_face_authenticator/src/face_authenticator_api.dart';
+import 'package:caf_face_authenticator/src/face_authenticator_exceptions.dart';
+import 'package:caf_face_authenticator/src/face_authenticator_result.dart';
 import 'package:cs_liveness_flutter/export.dart';
-import 'package:faceauth/src/faceauth_api.dart';
-import 'package:faceauth/src/faceauth_exceptions.dart';
-import 'package:faceauth/src/faceauth_result.dart';
+
 import 'package:flutter/cupertino.dart';
 
-class FaceAuth {
+class FaceAuthenticator {
   final String clientId;
   final String clientSecret;
-  final FaceAuthResult _result = FaceAuthResult();
+  final FaceAuthenticatorResult _result = FaceAuthenticatorResult();
   @visibleForTesting
-  FaceAuthApi faceAuthApi;
+  FaceAuthenticatorApi faceAuthenticatorApi;
   @visibleForTesting
   CsLiveness liveness;
 
-  FaceAuth(
+  FaceAuthenticator(
     this.clientId,
     this.clientSecret,
     token,
     personId,
-  )   : faceAuthApi = FaceAuthApi(token, clientId, clientSecret, personId),
+  )   : faceAuthenticatorApi = FaceAuthenticatorApi(token, clientId, clientSecret, personId),
         liveness = CsLiveness(
           clientId: clientId,
           clientSecret: clientSecret,
           vocalGuidance: false,
         );
 
-  Future<FaceAuthResult> initialize() async {
+  Future<FaceAuthenticatorResult> initialize() async {
     try {
       final livenessResult = await startLiveness();
       String sessionId = livenessResult.sessionId ?? '';
       _result.trackingId = sessionId;
       if (isLivenessResultValid(livenessResult)) {
         _result.imageBase64 = livenessResult.base64Image;
-        _result.isAlive = await faceAuthApi.verifyLiveness(sessionId);
-        _result.isMatch = await faceAuthApi.verifyFaceMatch(sessionId);
+        _result.isAlive = await faceAuthenticatorApi.verifyLiveness(sessionId);
+        _result.isMatch = await faceAuthenticatorApi.verifyFaceMatch(sessionId);
       }
       return _result;
-    } on FaceAuthLivenessSdkException {
+    } on FaceAuthenticatorLivenessSdkException {
       rethrow;
-    } on FaceAuthApiException {
+    } on FaceAuthenticatorApiException {
       rethrow;
     } catch (exception, stacktrace) {
-      throw FaceAuthUnknownException(exception, stacktrace);
+      throw FaceAuthenticatorUnknownException(exception, stacktrace);
     }
   }
 
@@ -55,7 +56,7 @@ class FaceAuth {
           e is CSLivenessPermissionException ||
           e is CSLivenessCancelByUserException ||
           e is CSLivenessGenericException) {
-        throw FaceAuthLivenessSdkException(e.toString());
+        throw FaceAuthenticatorLivenessSdkException(e.toString());
       } else {
         rethrow;
       }

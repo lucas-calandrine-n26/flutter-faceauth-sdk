@@ -1,10 +1,10 @@
-class FaceAuthResult {
+class FaceAuthenticatorResult {
   bool isAlive;
   bool isMatch;
   String? trackingId;
   String? imageBase64;
 
-  FaceAuthResult({
+  FaceAuthenticatorResult({
     this.isAlive = false,
     this.isMatch = false,
   });
