@@ -1,6 +1,6 @@
 name: caf_face_authenticator
 description: CAF Face Authenticator SDK
-version: 0.0.1
+version: 0.0.2
 publish_to: none
 
 environment:
@@ -13,7 +13,7 @@ dependencies:
   cs_liveness_flutter:
     git:
       url: https://github.com/ClearSale/LivenessPluginFlutter.git
-      ref: a9c4725349f5437e9718d821cab25ba8d072e7ff
+      ref: 1.1.0
   http: ^0.13.5
 
 dev_dependencies:
