@@ -25,9 +25,9 @@ bool isLiveness = false;
 bool isMatch = false;
 
 final faceAuthenticator = FaceAuthenticator(
-    'caf-mobile-token',
     'client-id',
     'client-secret',
+    'caf-mobile-token',
     'person-id (cpf)');
 
 try {
